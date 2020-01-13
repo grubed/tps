@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width" />
+    <style>
+        html,
+        body,
+        #container {
+            height: 100%;
+            padding: 0;
+            margin: 0;
+        }
+        .info {
+            position: absolute;
+            width: 150px;
+            height: 160px;
+            right: 0;
+            bottom: 0;
+            background-color: #fff;
+            padding: 20px;
+            margin: 0px;
+        }
+    </style>
+    <title>uds map</title>
+  </head>
+  <body>
+    <div id="container"></div>
+    <!-- 加载地图JSAPI脚本 -->
+    <script src="https://webapi.amap.com/maps?v=1.4.10&key=c453cc05a143cb2c905212d766126340&plugin=AMap.Driving&plugin=Map3D"></script>
+    <script src="/static/common.js"></script>
+    <script type="text/javascript">
+      const map = new AMap.Map('container', {
+          viewMode: '3D',
+          resizeEnable: true,
+          zoom: 13,
+          mapStyle: 'amap://styles/dark',
+      });
+      async function drawResult() {
+          const {data} = await fetchData();
+
+          drawDriverAllocation(data);
+
+      }
+
+      function drawDriverAllocation(data) {
+          console.log(data);
+          for (let i = 0; i < data.length; ++i) {
+
+              const points = data[i];
+              let point;
+              const polylinePath = [];
+              console.log(points);
+            const color = getColor(points[0].courier);
+              for (let j = 0; j < points.length; ++j) {
+                  point = points[j];
+
+                  const circleMarker = new AMap.CircleMarker({
+                      center: [point.point.lng, point.point.lat],
+                      radius: point.start || point.start ? 10 : 5,
+                      fillColor: color,
+                      strokeColor: j == 0 ? '#00c853' : point.start ? '#ffd600' : '#888',
+                      strokeWeight: j == 0 ? 3 : 1,
+                      zIndex: 10,
+                      fillOpacity: 1,
+                  });
+                  map.add(circleMarker);
+                  polylinePath.push([point.point.lng, point.point.lat]);
+              }
+              const polyline = new AMap.Polyline({
+                  path: polylinePath,
+                  borderWeight: 1,
+                  strokeColor: color,
+                  lineJoin: 'round',
+                  zIndex: 1,
+              });
+              map.add(polyline);
+          }
+      }
+      drawResult();
+    </script>
+  </body>
+</html>
